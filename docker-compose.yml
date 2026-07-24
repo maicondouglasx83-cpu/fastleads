@@ -4,7 +4,7 @@ services:
   # App Next.js - FastLeads
   fastleads-app:
     build:
-      context: .
+      context: https://github.com/maicondouglasx83-cpu/fastleads.git#main
       dockerfile: Dockerfile
     container_name: fastleads_app
     restart: always
@@ -13,10 +13,10 @@ services:
     environment:
       - PORT=3000
       - NEXT_PUBLIC_APP_LOCALE=pt-BR
-      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-http://postgres:5432}
-      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY:-your-anon-key}
+      - NEXT_PUBLIC_SUPABASE_URL=https://xgvqukojnhmobhcvhjsy.supabase.co
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_U2hJ-NxfkFIHYGPrulJfCA_u6VADmSf
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:-your-service-role-key}
-      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-your-64-char-hex-key-here}
+      - ENCRYPTION_KEY=42b6229f0f541dc321a474e67164a2d35354095521ef680c78df8ec347c282a1
       - META_APP_SECRET=${META_APP_SECRET:-your-meta-app-secret}
     depends_on:
       - postgres
