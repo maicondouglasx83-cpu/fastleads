@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  # App Next.js - FastLeads
+  fastleads-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fastleads_app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - NEXT_PUBLIC_APP_LOCALE=pt-BR
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-http://postgres:5432}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY:-your-anon-key}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:-your-service-role-key}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-your-64-char-hex-key-here}
+      - META_APP_SECRET=${META_APP_SECRET:-your-meta-app-secret}
+    depends_on:
+      - postgres
+
+  # PostgreSQL com suporte a pgvector
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: fastleads_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-fastleads}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
