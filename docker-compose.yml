@@ -3,9 +3,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: https://xgvqukojnhmobhcvhjsy.supabase.co
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_U2hJ-NxfkFIHYGPrulJfCA_u6VADmSf
     container_name: fastleads-app
     restart: always
     ports:
       - "3000:3000"
     env_file:
-      - .env.local
+      - .env.production
