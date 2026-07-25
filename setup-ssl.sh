@@ -1,25 +1,15 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# FastLeads - Automated HTTPS / Nginx Reverse Proxy Setup Script
-# Usage: sudo bash setup-ssl.sh seudominio.srv1656135.hstgr.cloud
+# FastLeads - Automated HTTPS Setup Script for Hostinger / Docker
 # ==============================================================================
 
 DOMAIN=$1
 
-if [ -z "$DOMAIN" ]; then
-    echo "❌ Erro: Por favor informe o seu domínio ou subdomínio."
-    echo "Exemplo: sudo bash setup-ssl.sh fastleads-euqs.srv1656135.hstgr.cloud"
-    exit 1
-fi
+echo "🚀 Iniciando configuração automática de HTTPS do FastLeads..."
 
-echo "🚀 Iniciando configuração automática de HTTPS para: $DOMAIN..."
-
-# Create Nginx site configuration
-NGINX_CONF="/etc/nginx/sites-available/fastleads"
-
-if [ -d "/etc/nginx" ]; then
-    echo "📦 Nginx detectado! Criando arquivo de configuração em $NGINX_CONF..."
-    
+if [ -d "/etc/nginx" ] && command -v nginx &> /dev/null; then
+    echo "📦 Nginx detectado! Criando arquivo de configuração..."
+    NGINX_CONF="/etc/nginx/sites-available/fastleads"
     cat <<EOF | sudo tee $NGINX_CONF > /dev/null
 server {
     listen 80;
@@ -38,29 +28,30 @@ server {
     }
 }
 EOF
-
     sudo ln -sf $NGINX_CONF /etc/nginx/sites-enabled/fastleads
-    sudo nginx -t
-
-    if [ $? -eq 0 ]; then
-        echo "✅ Configuração do Nginx válida! Recarregando Nginx..."
-        sudo systemctl reload nginx || sudo service nginx reload
-    else
-        echo "⚠️ Erro na sintaxe do Nginx. Verifique as configurações."
-        exit 1
-    fi
-
-    # Try Certbot if available
-    if command -v certbot &> /dev/null; then
-        echo "🔒 Solicitando certificado SSL gratuito (Certbot)..."
-        sudo certbot --nginx -d $DOMAIN --non-interactive --agree-tos --register-unsafely-without-email || true
-    fi
-
-    echo "🎉 PRONTO! Seu sistema FastLeads agora está respondendo em HTTPS:"
-    echo "👉 https://$DOMAIN"
-    echo "👉 Webhook Meta: https://$DOMAIN/api/whatsapp/webhook"
+    sudo nginx -t && sudo systemctl reload nginx
+    echo "✅ Nginx configurado!"
 else
-    echo "⚠️ Nginx não encontrado no sistema operacional."
-    echo "Iniciando túnel seguro HTTPS automático via Cloudflare Tunnel..."
-    npx cloudflared tunnel --url http://localhost:3000
+    echo "🐳 Nginx nativo não encontrado. Ativando Túnel HTTPS em container Docker..."
+    docker stop fastleads-tunnel 2>/dev/null || true
+    docker rm fastleads-tunnel 2>/dev/null || true
+    docker run -d --name fastleads-tunnel --network host cloudflare/cloudflared:latest tunnel --url http://localhost:3000
+
+    echo "⏳ Aguardando inicialização do túnel SSL..."
+    sleep 5
+
+    TUNNEL_URL=$(docker logs fastleads-tunnel 2>&1 | grep -o 'https://[a-zA-Z0-9-]*\.trycloudflare\.com' | head -n 1)
+
+    if [ -n "$TUNNEL_URL" ]; then
+        echo ""
+        echo "=========================================================================="
+        echo "🎉 TÚNEL HTTPS CRIADO COM SUCESSO!"
+        echo "=========================================================================="
+        echo "👉 Seu sistema FastLeads: $TUNNEL_URL"
+        echo "👉 URL do Webhook na Meta: $TUNNEL_URL/api/whatsapp/webhook"
+        echo "=========================================================================="
+        echo ""
+    else
+        echo "ℹ️ O túnel Docker foi iniciado! Veja os logs com: docker logs fastleads-tunnel"
+    fi
 fi
