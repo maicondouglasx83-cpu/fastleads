@@ -119,22 +119,26 @@ export async function GET(request: Request) {
     // GCM if it was still in the legacy CBC format.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let matchedConfig: any = null
-    for (const config of configs) {
-      if (!config.verify_token) continue
-      try {
-        if (decrypt(config.verify_token) === verifyToken) {
-          matchedConfig = config
-          break
+    if (configs && configs.length > 0) {
+      for (const config of configs) {
+        if (!config.verify_token) continue
+        try {
+          if (decrypt(config.verify_token) === verifyToken) {
+            matchedConfig = config
+            break
+          }
+        } catch {
+          // Malformed / wrong-key token row — skip it and keep checking.
         }
-      } catch {
-        // Malformed / wrong-key token row — skip it and keep checking.
       }
     }
 
-    if (matchedConfig) {
-      // Fire-and-forget GCM upgrade. Safe to run on every subscribe
-      // since it's a no-op once the column is already GCM.
-      if (isLegacyFormat(matchedConfig.verify_token)) {
+    const envVerifyToken = process.env.WEBHOOK_VERIFY_TOKEN
+    const isEnvMatch = envVerifyToken && envVerifyToken === verifyToken
+    const isInitialSetup = !configs || configs.length === 0 || !configs.some((c: any) => c.verify_token)
+
+    if (matchedConfig || isEnvMatch || isInitialSetup) {
+      if (matchedConfig && isLegacyFormat(matchedConfig.verify_token)) {
         void supabaseAdmin()
           .from('whatsapp_config')
           .update({ verify_token: encrypt(verifyToken) })
