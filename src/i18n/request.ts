@@ -1,15 +1,18 @@
 import { getRequestConfig } from 'next-intl/server';
 
 export default getRequestConfig(async () => {
-  // Read the locale from the environment, defaulting to 'en'
-  const locale = process.env.NEXT_PUBLIC_APP_LOCALE || 'en';
+  // Read the locale from the environment, defaulting to 'pt-BR'
+  const locale = process.env.NEXT_PUBLIC_APP_LOCALE || 'pt-BR';
 
   let messages;
   try {
-    messages = (await import(`../../messages/${locale}.json`)).default;
+    if (locale === 'pt-BR' || locale === 'pt' || locale === 'pt_BR') {
+      messages = (await import(`../../messages/pt-BR.json`)).default;
+    } else {
+      messages = (await import(`../../messages/${locale}.json`)).default;
+    }
   } catch (error) {
-    // Fallback to English if the dictionary for the requested locale doesn't exist yet
-    messages = (await import(`../../messages/en.json`)).default;
+    messages = (await import(`../../messages/pt-BR.json`)).default;
   }
 
   return {
