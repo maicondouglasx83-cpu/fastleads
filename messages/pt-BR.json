@@ -76,10 +76,10 @@
       "noChange": "No change {suffix}"
     },
     "quickActions": {
-      "newContact": "New Contact",
-      "newDeal": "New Deal",
-      "newBroadcast": "New Broadcast",
-      "newAutomation": "New Automation"
+      "newContact": "Novo Contato",
+      "newDeal": "Novo Negócio",
+      "newBroadcast": "Nova Campanha",
+      "newAutomation": "Nova Automação"
     },
     "activityFeed": {
       "title": "Recent Activity",
@@ -94,34 +94,30 @@
       "timeD": "{day}d ago"
     },
     "conversationsChart": {
-      "title": "Conversations Over Time",
-      "description": "Daily message volume by direction",
-      "days": "{count} days",
-      "noActivity": "No message activity in this range",
-      "noActivityHint": "Send or receive messages to start populating this chart.",
-      "incoming": "Incoming",
-      "outgoing": "Outgoing",
-      "tooltipIncoming": "{count} incoming",
-      "tooltipOutgoing": "{count} outgoing",
-      "ariaLabel": "Conversations per day"
+      "title": "Conversas ao Longo do Tempo",
+      "description": "Volume diário de mensagens por direção",
+      "days": "{count} dias",
+      "noActivity": "Nenhuma mensagem no período",
+      "noActivityHint": "Envie ou receba mensagens no WhatsApp para popular o gráfico.",
+      "incoming": "Recebidas",
+      "outgoing": "Enviadas"
     },
     "pipelineDonut": {
-      "title": "Pipeline Value",
-      "description": "Open deals by stage",
-      "noOpenDeals": "No open deals yet",
+      "title": "Valor do Pipeline",
+      "description": "Negócios abertos por estágio",
+      "noOpenDeals": "Nenhum negócio aberto ainda",
       "noOpenDealsHint": "Crie negócios em Pipelines para visualizar o gráfico aqui.",
-      "dealCount": "{count} {count, plural, =1 {deal} other {deals}}",
-      "total": "Total",
-      "ariaLabel": "Pipeline value by stage"
+      "dealCount": "{count} {count, plural, =1 {negócio} other {negócios}}"
     },
     "responseTimeChart": {
-      "title": "Average First Response Time",
-      "description": "Minutes to reply to a customer's first unreplied message, by weekday",
-      "target": "target {minutes}m",
-      "thisWeek": "This week:",
-      "lastWeek": "Last week:",
-      "noReplies": "No replies recorded yet",
-      "noRepliesHint": "This chart fills in as you reply to customer messages."
+      "title": "Tempo Médio de Primeiras Respostas",
+      "description": "Minutos para responder ao primeiro contato do cliente, por dia da semana",
+      "target": "meta {minutes}m",
+      "thisWeek": "Esta semana:",
+      "lastWeek": "Semana passada:",
+      "noReplies": "Nenhuma resposta registrada ainda",
+      "noRepliesHint": "Responda a clientes no Chat ao Vivo para visualizar métricas de tempo.",
+      "category": "Média (min)"
     },
     "emptyState": {
       "title": "Not enough data yet"
@@ -499,7 +495,7 @@
       "toastNotLinkedToAccount": "Perfil não vinculado a uma conta."
     },
     "board": {
-      "dropDealHere": "Drop a deal here",
+      "dropDealHere": "Arraste um negócio para cá",
       "addDeal": "Novo Negócio",
       "noDeals": "Nenhum negócio neste estágio"
     },
@@ -575,19 +571,19 @@
       "toastDeleted": "Pipeline excluído"
     },
     "analytics": {
-      "totalDeals": "Total Deals",
-      "totalDealsTooltip": "Count of every deal in this pipeline that isn't marked as Lost. Won deals are still included.",
-      "pipelineValue": "Pipeline Value",
-      "pipelineValueTooltip": "Sum of the dollar values of all deals in this pipeline, excluding deals marked as Lost.",
-      "avgDealSize": "Avg Deal Size",
-      "avgDealSizeTooltip": "Pipeline Value divided by Total Deals — the average value of a single non-lost deal.",
-      "weightedValue": "Weighted Value",
-      "weightedValueTooltip": "Expected revenue: each open deal's value × its stage probability. First stage ≈ 10%, stages progress up to 90%, Won = 100%. Lost deals are excluded.",
-      "wonThisMonth": "Won This Month",
-      "wonThisMonthTooltip": "Deals marked as Won since the first day of the current month.",
-      "lostThisMonth": "Lost This Month",
-      "lostThisMonthTooltip": "Deals marked as Lost since the first day of the current month.",
-      "howCalculated": "How {label} is calculated"
+      "totalDeals": "TOTAL DE NEGÓCIOS",
+      "totalDealsTooltip": "Total de negócios no pipeline excluindo os marcados como Perdidos.",
+      "pipelineValue": "VALOR DO PIPELINE",
+      "pipelineValueTooltip": "Soma do valor em dinheiro de todos os negócios no pipeline.",
+      "avgDealSize": "TICKET MÉDIO",
+      "avgDealSizeTooltip": "Valor do Pipeline dividido pelo Total de Negócios.",
+      "weightedValue": "VALOR PONDERADO",
+      "weightedValueTooltip": "Receita estimada multiplicada pela probabilidade de cada estágio.",
+      "wonThisMonth": "GANHOS ESTE MÊS",
+      "wonThisMonthTooltip": "Negócios marcados como Ganho este mês.",
+      "lostThisMonth": "PERDIDOS ESTE MÊS",
+      "lostThisMonthTooltip": "Negócios marcados como Perdido este mês.",
+      "howCalculated": "Como {label} é calculado"
     }
   },
   "Broadcasts": {
@@ -1695,5 +1691,15 @@
       "title": "Configurações & API",
       "subtitle": "Gerencie a conexão do WhatsApp, chaves de API, membros da equipe e assistente de IA."
     }
+  },
+  "Notifications": {
+    "title": "Notificações",
+    "description": "Conversas que outros membros da equipe atribuírem a você aparecerão aqui.",
+    "markAllRead": "Marcar tudo como lido",
+    "noNotifications": "Nenhuma notificação ainda",
+    "noNotificationsHint": "Você receberá um alerta aqui quando alguém lhe atribuir uma conversa.",
+    "retry": "Tentar novamente",
+    "toastMarkReadFailed": "Falha ao marcar notificação como lida",
+    "toastMarkAllReadFailed": "Falha ao marcar todas como lidas"
   }
 }
