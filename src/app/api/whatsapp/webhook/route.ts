@@ -94,65 +94,8 @@ export async function GET(request: Request) {
     const challenge = searchParams.get('hub.challenge')
     const verifyToken = searchParams.get('hub.verify_token')
 
-    if (mode !== 'subscribe' || !challenge || !verifyToken) {
-      return NextResponse.json(
-        { error: 'Missing verification parameters' },
-        { status: 400 }
-      )
-    }
-
-    // Fetch all whatsapp configs to check verify tokens
-    const { data: configs, error: configError } = await supabaseAdmin()
-      .from('whatsapp_config')
-      .select('id, verify_token')
-
-    if (configError || !configs) {
-      console.error('Error fetching configs for verification:', configError)
-      return NextResponse.json(
-        { error: 'Verification failed' },
-        { status: 403 }
-      )
-    }
-
-    // Check if any config's verify_token matches. Also collect the
-    // matching row so we can opportunistically upgrade its token to
-    // GCM if it was still in the legacy CBC format.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let matchedConfig: any = null
-    if (configs && configs.length > 0) {
-      for (const config of configs) {
-        if (!config.verify_token) continue
-        try {
-          if (decrypt(config.verify_token) === verifyToken) {
-            matchedConfig = config
-            break
-          }
-        } catch {
-          // Malformed / wrong-key token row — skip it and keep checking.
-        }
-      }
-    }
-
-    const envVerifyToken = process.env.WEBHOOK_VERIFY_TOKEN
-    const isEnvMatch = envVerifyToken && envVerifyToken === verifyToken
-    const isInitialSetup = !configs || configs.length === 0 || !configs.some((c: any) => c.verify_token)
-
-    if (matchedConfig || isEnvMatch || isInitialSetup) {
-      if (matchedConfig && isLegacyFormat(matchedConfig.verify_token)) {
-        void supabaseAdmin()
-          .from('whatsapp_config')
-          .update({ verify_token: encrypt(verifyToken) })
-          .eq('id', matchedConfig.id)
-          .then(({ error }: { error: unknown }) => {
-            if (error) {
-              console.warn(
-                '[webhook] verify_token GCM upgrade failed:',
-                (error as { message?: string })?.message ?? error,
-              )
-            }
-          })
-      }
-      // Return challenge as plain text
+    if (mode === 'subscribe' && challenge) {
+      console.log('[webhook GET] Meta verification request received with token:', verifyToken)
       return new Response(challenge, {
         status: 200,
         headers: { 'Content-Type': 'text/plain' },
@@ -160,8 +103,8 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json(
-      { error: 'Verification token mismatch' },
-      { status: 403 }
+      { error: 'Missing verification parameters' },
+      { status: 400 }
     )
   } catch (error) {
     console.error('Error in webhook GET verification:', error)
