@@ -10,5 +10,11 @@ services:
     restart: always
     ports:
       - "3000:3000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME:-fastleads}.rule=Host(`${COMPOSE_PROJECT_NAME:-fastleads}.${TRAEFIK_HOST:-srv1656135.hstgr.cloud}`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME:-fastleads}.entrypoints=websecure"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME:-fastleads}.tls.certresolver=letsencrypt"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME:-fastleads}.loadbalancer.server.port=3000"
     env_file:
       - .env.production
