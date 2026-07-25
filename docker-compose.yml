@@ -1,0 +1,11 @@
+services:
+  fastleads:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fastleads-app
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.local
