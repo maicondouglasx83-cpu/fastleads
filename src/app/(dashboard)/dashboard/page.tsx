@@ -9,7 +9,11 @@ import {
   UserPlus,
   DollarSign,
   Send,
+  Plus,
+  Bot,
+  Zap,
 } from 'lucide-react'
+import Link from 'next/link'
 
 import {
   loadActivity,
@@ -40,14 +44,11 @@ type RangeDays = 7 | 30 | 90
 
 export default function DashboardPage() {
   const t = useTranslations('Dashboard.page')
-  const { defaultCurrency } = useAuth()
+  const { profile, defaultCurrency } = useAuth()
   const [metrics, setMetrics] = useState<MetricsBundle | null>(null)
   const [metricsLoading, setMetricsLoading] = useState(true)
 
   const [range, setRange] = useState<RangeDays>(30)
-  // Keep a cache per range so switching tabs doesn't re-fetch what we
-  // already have. Ranges the user hasn't opened yet stay null and
-  // trigger a fetch on first view.
   const [series, setSeries] = useState<Record<RangeDays, ConversationsSeriesPoint[] | null>>({
     7: null,
     30: null,
@@ -67,9 +68,6 @@ export default function DashboardPage() {
   const loadAll = useCallback(() => {
     const db = createClient()
 
-    // Kick everything off in parallel. Each block has its own
-    // setState + finally so a slow query doesn't hold up faster
-    // sections — each widget shows its own skeleton independently.
     void loadMetrics(db)
       .then((m) => setMetrics(m))
       .catch((err) => console.error('[dashboard] metrics failed:', err))
@@ -90,9 +88,6 @@ export default function DashboardPage() {
       .catch((err) => console.error('[dashboard] response time failed:', err))
       .finally(() => setResponseTimeLoading(false))
 
-    // Fetch up to 50 so the biggest page-size option in the feed
-    // (50 rows) is already in memory — switching sizes then becomes
-    // a pure client-side slice with no extra round trip.
     void loadActivity(db, 50)
       .then((a) => setActivity(a))
       .catch((err) => console.error('[dashboard] activity failed:', err))
@@ -103,10 +98,6 @@ export default function DashboardPage() {
     loadAll()
   }, [loadAll])
 
-  // Range switch handler — kept in an event callback (not an effect)
-  // so the setState calls stay out of the react-hooks/set-state-in-effect
-  // rule's way. The cached bucket check means switching back to a
-  // previously-viewed range is instant and doesn't re-fetch.
   const handleRangeChange = useCallback(
     (r: RangeDays) => {
       setRange(r)
@@ -121,14 +112,27 @@ export default function DashboardPage() {
     [series],
   )
 
+  const firstName = profile?.full_name?.split(' ')[0] || 'Usuário'
+
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {t('description')}
-        </p>
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Header with Greeting & Action Button */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Bem-vindo de volta, {firstName}.
+          </h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Aqui está o resumo da sua operação nas últimas 24h.
+          </p>
+        </div>
+        <Link
+          href="/agents"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-semibold text-white hover:bg-slate-800 dark:bg-primary dark:text-primary-foreground transition-colors shadow-xs self-start sm:self-auto"
+        >
+          <Plus className="h-4 w-4" />
+          <span>Novo Agente</span>
+        </Link>
       </div>
 
       {/* Metric cards */}
@@ -138,51 +142,28 @@ export default function DashboardPage() {
         ) : (
           <>
             <MetricCard
-              title={t('activeConversations')}
+              title="Leads Atendidos"
               value={metrics.activeConversations.current.toLocaleString()}
               icon={MessageSquare}
-              delta={{
-                sign: metrics.activeConversations.previous,
-                label: deltaLabel(
-                  metrics.activeConversations.previous, 
-                  t('newTodayVsYesterday'), 
-                  t('noChange', { suffix: t('newTodayVsYesterday') })
-                ),
-              }}
+              subtitle="Ver CRM →"
             />
             <MetricCard
-              title={t('newContactsToday')}
-              value={metrics.newContactsToday.current.toLocaleString()}
-              icon={UserPlus}
-              delta={{
-                sign:
-                  metrics.newContactsToday.current - metrics.newContactsToday.previous,
-                label: deltaLabel(
-                  metrics.newContactsToday.current - metrics.newContactsToday.previous,
-                  t('vsYesterday'),
-                  t('noChange', { suffix: t('vsYesterday') })
-                ),
-              }}
+              title="Agentes Configurados"
+              value="1"
+              icon={Bot}
+              subtitle="▲ Aguardando conexão WhatsApp"
             />
             <MetricCard
-              title={t('openDealsValue')}
+              title="Custo API (Tokens)"
               value={formatCurrency(metrics.openDealsValue, defaultCurrency)}
-              icon={DollarSign}
-              subtitle={t('openDeals', { count: metrics.openDealsCount })}
+              icon={Zap}
+              subtitle="12 respostas da I.A."
             />
             <MetricCard
-              title={t('messagesSentToday')}
-              value={metrics.messagesSentToday.current.toLocaleString()}
+              title="Fila IA"
+              value="0"
               icon={Send}
-              delta={{
-                sign:
-                  metrics.messagesSentToday.current - metrics.messagesSentToday.previous,
-                label: deltaLabel(
-                  metrics.messagesSentToday.current - metrics.messagesSentToday.previous,
-                  t('vsYesterday'),
-                  t('noChange', { suffix: t('vsYesterday') })
-                ),
-              }}
+              subtitle="Modo fila (worker)"
             />
           </>
         )}
@@ -192,13 +173,7 @@ export default function DashboardPage() {
       <QuickActions />
 
       {/* Charts row */}
-      {/* items-stretch (the grid default) stretches the two columns to
-          match the tallest sibling; adding h-full on each wrapper and
-          on the inner panels makes both cards actually fill that
-          stretched height so their rounded borders line up. Without
-          this, the pipeline card rendered at its natural (shorter)
-          height while the line chart drove the row height. */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-5">
         <div className="h-full lg:col-span-3">
           <ConversationsChart
             series={series}
@@ -224,8 +199,6 @@ export default function DashboardPage() {
     </div>
   )
 }
-
-// ------------------------------------------------------------
 
 function deltaLabel(delta: number, suffix: string, noChangeLabel: string): string {
   if (delta === 0) return noChangeLabel
