@@ -224,7 +224,7 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
             </div>
             <div className="flex flex-col">
               <span className="text-base font-bold tracking-tight text-foreground">
-                AUVVO
+                FastLeads
               </span>
             </div>
           </Link>
